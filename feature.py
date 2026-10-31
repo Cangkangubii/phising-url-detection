@@ -26,8 +26,12 @@ class FeatureExtraction:
         self.soup = ""
 
         try:
-            self.response = requests.get(url)
-            self.soup = BeautifulSoup(response.text, "html.parser")
+            self.response = requests.get(
+                url,
+                timeout=10,
+                headers={"User-Agent": "Mozilla/5.0 (phishing-url-detection)"},
+            )
+            self.soup = BeautifulSoup(self.response.text, "html.parser")
         except:
             pass
 
@@ -182,7 +186,7 @@ class FeatureExtraction:
                     if (
                         self.url in head.link["href"]
                         or len(dots) == 1
-                        or domain in head.link["href"]
+                        or self.domain in head.link["href"]
                     ):
                         return 1
             return -1
@@ -211,6 +215,7 @@ class FeatureExtraction:
     # 13. RequestURL
     def RequestURL(self):
         try:
+            i, success = 0, 0
             for img in self.soup.find_all("img", src=True):
                 dots = [x.start(0) for x in re.finditer("\.", img["src"])]
                 if (
@@ -273,7 +278,7 @@ class FeatureExtraction:
                     "#" in a["href"]
                     or "javascript" in a["href"].lower()
                     or "mailto" in a["href"].lower()
-                    or not (url in a["href"] or self.domain in a["href"])
+                    or not (self.url in a["href"] or self.domain in a["href"])
                 ):
                     unsafe = unsafe + 1
                 i = i + 1
@@ -352,7 +357,7 @@ class FeatureExtraction:
     # 17. InfoEmail
     def InfoEmail(self):
         try:
-            if re.findall(r"[mail\(\)|mailto:?]", self.soap):
+            if re.findall(r"mail\(\)|mailto:", self.response.text):
                 return -1
             else:
                 return 1
@@ -466,7 +471,7 @@ class FeatureExtraction:
         try:
             rank = BeautifulSoup(
                 urllib.request.urlopen(
-                    "http://data.alexa.com/data?cli=10&dat=s&url=" + url
+                    "http://data.alexa.com/data?cli=10&dat=s&url=" + self.url
                 ).read(),
                 "xml",
             ).find("REACH")["RANK"]
@@ -484,7 +489,7 @@ class FeatureExtraction:
             )
 
             global_rank = int(
-                re.findall(r"Global Rank: ([0-9]+)", rank_checker_response.text)[0]
+                re.findall(r"Global Rank: ([0-9]+)", prank_checker_response.text)[0]
             )
             if global_rank > 0 and global_rank < 100000:
                 return 1
@@ -521,7 +526,7 @@ class FeatureExtraction:
         try:
             url_match = re.search(
                 "at\.ua|usa\.cc|baltazarpresentes\.com\.br|pe\.hu|esy\.es|hol\.es|sweddy\.com|myjino\.ru|96\.lt|ow\.ly",
-                url,
+                self.url,
             )
             ip_address = socket.gethostbyname(self.domain)
             ip_match = re.search(

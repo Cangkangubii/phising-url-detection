@@ -106,3 +106,7 @@ venv.bak/
 .mypy_cache/
 
 .idea/*
+
+# Data riwayat & kunci HMAC (jangan di-commit)
+history.db
+secret.key

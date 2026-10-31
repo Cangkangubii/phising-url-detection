@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+      integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk"
+      crossorigin="anonymous"
+    />
+    <link href="{{ url_for('static', filename='styles.css') }}" rel="stylesheet" />
+    <title>Riwayat Pengecekan</title>
+  </head>
+
+  <body>
+    <div class="container">
+      <h2>RIWAYAT PENGECEKAN URL</h2>
+      <p><a href="/" style="color: #fff; text-decoration: underline">&larr; Kembali</a></p>
+
+      {% if ok %}
+      <div class="alert alert-success">
+        Integritas riwayat terverifikasi: semua {{ records|length }} catatan utuh (rantai HMAC-SHA256 valid).
+      </div>
+      {% else %}
+      <div class="alert alert-danger">
+        PERINGATAN: integritas riwayat RUSAK. Catatan yang dimodifikasi atau terputus: ID {{ broken|join(', ') }}.
+      </div>
+      {% endif %}
+
+      <table class="table table-sm table-dark table-striped">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Waktu (UTC)</th>
+            <th>URL</th>
+            <th>Hasil</th>
+            <th>Prob. aman</th>
+            <th>Hash catatan</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in records %}
+          <tr class="{{ 'table-danger' if r.id in broken else '' }}">
+            <td>{{ r.id }}</td>
+            <td>{{ r.checked_at }}</td>
+            <td style="word-break: break-all">{{ r.url }}</td>
+            <td>{{ r.label }}</td>
+            <td>{{ '%.2f'|format(r.safe_prob) }}</td>
+            <td><code style="color: #9fd">{{ r.record_hash[:16] }}&hellip;</code></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6">Belum ada riwayat.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </body>
+</html>

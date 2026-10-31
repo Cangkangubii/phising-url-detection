@@ -45,6 +45,12 @@
             <label for="url" class="form__label">URL</label>
             <button class="button" role="button">Check here</button>
           </form>
+          {% if error %}
+          <br />
+          <div class="alert alert-danger">{{ error }}</div>
+          {% endif %}
+          <br />
+          <a href="/history" style="color: #fff; text-decoration: underline">Lihat riwayat pengecekan</a>
         </div>
 
         <div class="col-md" id="form2">
